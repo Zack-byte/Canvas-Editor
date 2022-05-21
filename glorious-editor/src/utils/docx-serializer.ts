@@ -1,6 +1,7 @@
 import * as archiver from "archiver";
 import { createWriteStream, readFile } from "fs";
 import { ShadowDocument } from "src/constants/document";
+import { ApiService } from "src/services/api-services";
 
 export class DocxSerializer {
 
@@ -13,9 +14,7 @@ export class DocxSerializer {
   private settingsXml = '';
   private stylesXml = '';
 
-  public DocxSerializer() {
-
-  }
+  constructor(private apiService: ApiService) {}
 
   public serialize(document: ShadowDocument) {
     this.generateDocumentXml(document);
@@ -65,7 +64,7 @@ export class DocxSerializer {
 
   private buildDocx(): void {
 
-    /// Will use a combo of archiver and fs to serialize into local files for testing.
+    this.apiService.postGenerateDocx("test");
 
   }
 }
