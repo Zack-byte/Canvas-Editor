@@ -25,7 +25,7 @@ export class EditorComponent implements OnInit {
   public ngOnInit(): void {
   }
 
-  public serializeToDocx(): void {
+  public requestDocx(): void {
     const request = new GenerateDocxRequest({
       shadowDocument: this.currentDocument
     });

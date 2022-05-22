@@ -1,0 +1,20 @@
+:host {
+  .toolbar {
+    width: 100vw;
+    height: 5vh;
+    display: flex;
+    padding: .5rem;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+
+    mat-icon {
+      position: relative;
+      top: .3rem;
+      color: #3f3f3f;
+    }
+  }
+
+}
