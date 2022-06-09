@@ -7,6 +7,6 @@ export class GenerateDocxRequest implements IGenerateDocxRequestDto {
 
   constructor(o?: Partial<GenerateDocxRequest>) {
     const obj: Partial<GenerateDocxRequest> = getObject(o);
-    this.shadowDocument = new ShadowDocument(obj.shadowDocument);
+    this.shadowDocument = new ShadowDocument("", obj.shadowDocument);
   }
 }
