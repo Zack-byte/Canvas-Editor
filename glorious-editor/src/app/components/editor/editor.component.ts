@@ -5,6 +5,7 @@ import { take } from 'rxjs/operators';
 import { ShadowDocument } from 'src/models/shadow-document/shadow-document.model';
 import { GenerateDocxResponse } from 'src/models/generate-docx-response/generate-docx-response.model';
 import { Selection } from 'src/utils/selection.utils';
+import { ThisReceiver } from '@angular/compiler';
 
 @Component({
   selector: 'app-editor',
@@ -16,7 +17,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
   public currentFontSize: number;
   public currentFont: string;
   public offsetWidth = 0;
-  public offsetHeight = 0;
+  public offsetHeight = 12;
   public baseline = 0;
   public canvas: HTMLCanvasElement;
   public backgroundColor = 'white';
@@ -24,13 +25,24 @@ export class EditorComponent implements OnInit, AfterViewInit {
   public scrollTop = 0;
   public scrollLeft = 0;
   public selection: Selection;
+  public shiftPressed = false;
+  public needsClearing = false;
+  public isOpera = false;
+  public cursorPosition = {
+    line: 0,
+    character: 0,
+  }
 
   constructor(private apiService: ApiService) {
     this.currentDocument = new ShadowDocument("", {
       name: "Test Document",
       font: "Times New Roman",
       fontSize: 12,
-      color: "black"
+      color: "black",
+      marginBottom: 35,
+      marginLeft: 35,
+      marginRight: 35,
+      marginTop: 35
     });
 
     this.currentFontSize = this.currentDocument.fontSize;
@@ -43,14 +55,44 @@ export class EditorComponent implements OnInit, AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    this.selection = new Selection(this, "blue");
+    this.selection = new Selection(this, "black");
     this.handleFontMetrics();
     this.canvas = <HTMLCanvasElement>document.getElementById('canvas-tile-content');
 
     const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>this.canvas.getContext("2d");
 
-    ctx.font = this.currentFontSize + 'px' + this.currentFont;
-    ctx.fillText('Test', 0, this.baseline);
+    ctx.font = `${this.currentFontSize}px ${this.currentFont}`;
+    window.addEventListener('keydown', this.keydown.bind(this), true);
+    window.addEventListener('focus', this.clearKeyModifiers.bind(this), true);
+    window.addEventListener('focus', this.renderDocument.bind(this), true);
+    const appview = document.getElementsByClassName('appview');
+    appview[0].addEventListener('click', (event:  any) => {
+      this.addCursorToSreen(event);
+    });
+  }
+
+  public addCursorToSreen(event: PointerEvent): void {
+    this.selection.setVisible(true);
+  }
+
+  public addKeyModifier(e: KeyboardEvent): void {
+    if (e.keyCode == 16) {
+      this.shiftPressed = true;
+    }
+  };
+
+  public removeKeyModifier(e: KeyboardEvent): void {
+    if (e.keyCode === 16) {
+      this.shiftPressed = false;
+    };
+  };
+
+  public clearKeyModifiers(): void {
+    this.shiftPressed = false;
+  }
+
+  public getSelection(): any {
+    return this.selection;
   }
 
   public requestDocx(): void {
@@ -62,7 +104,6 @@ export class EditorComponent implements OnInit, AfterViewInit {
     .postGenerateDocx(request)
     .pipe(take(1))
     .subscribe((result: GenerateDocxResponse) => {
-      console.log(result);
     })
   }
 
@@ -137,8 +178,102 @@ export class EditorComponent implements OnInit, AfterViewInit {
 
       // Drawing text
       ctx.fillText(
-        this.currentDocument.getLine(i).slice(this.scrollLeft), 0, topOffset + baselineOffset
+        this.currentDocument.getLine(i).slice(this.scrollLeft), 0 + this.currentDocument.marginLeft, topOffset + baselineOffset + this.currentDocument.marginTop
       );
+
+      console.log('BaselineOffset', baselineOffset);
+      console.log('TopOffset', topOffset);
+      console.log('Document', this.currentDocument);
+
     }
   }
+
+
+  public insertTextAtCurrentPosition(text: string): void {
+    // If selection is not empty we need to "replace" selected text with inserted
+    // one which means deleting old selected text before inserting new one
+    if (!this.selection.isEmpty()) {
+      this.deleteCharAtCurrentPosition(false);
+    }
+
+    var pos = this.selection.getPosition();
+
+    const result = this.currentDocument.insertText(text, pos[0], pos[1]);
+    // Inserting new text and changing position of cursor to a new one
+    this.selection.setPosition(
+      result[0], result[1], false
+    );
+    this.renderDocument();
+  }
+
+  public deleteCharAtCurrentPosition(forward: boolean): void {
+    // If there is a selection we just remove it no matter what direction is
+    if (!this.selection.isEmpty()) {
+
+      const result = this.currentDocument.deleteRange(
+          this.selection.start.character, this.selection.start.line,
+          this.selection.end.character, this.selection.end.line
+        );
+
+      this.selection.setPosition(result[0], result[1], false);
+    } else {
+      var pos = this.selection.getPosition();
+      // Deleting text and changing position of cursor to a new one
+      const result = this.currentDocument.deleteChar(forward, pos[0], pos[1]);
+      this.selection.setPosition(result[0], result[1], false);
+    }
+    this.renderDocument();
+    this.selection.updateCursorStyle();
+  }
+
+  public inputFocus(): void {
+    this.selection.setVisible(true);
+  }
+
+  public handleInput(e: string) {
+    if (e != null) {
+      this.insertTextAtCurrentPosition(e);
+      this.needsClearing = true;
+    }
+
+    this.renderDocument();
+    this.selection.updateCursorStyle()
+  }
+
+
+
+  public keydown(e: KeyboardEvent): void {
+    var handled = true;
+    switch(e.key) {
+      case 'Backspace': 
+        this.deleteCharAtCurrentPosition(false);
+        break;
+      case 'Delete': 
+        this.deleteCharAtCurrentPosition(true);
+        break;
+      case 'Enter': 
+        this.insertTextAtCurrentPosition('\n');
+        break;
+      case 'ArrowLeft': 
+        this.selection.moveLeft(1, this.shiftPressed);
+        break;
+      case 'ArrowUp': 
+        this.selection.moveUp(1, this.shiftPressed);
+        break;
+      case 'ArrowRight': 
+        this.selection.moveRight(1, this.shiftPressed);
+        break;
+      case 'ArrowDown': 
+        this.selection.moveDown(1, this.shiftPressed);
+        break;
+      case 'Shift':
+        break;
+      default:
+        this.handleInput(e.key);
+    }
+    if(handled) {
+      e.preventDefault();
+    }
+  }
+
 }

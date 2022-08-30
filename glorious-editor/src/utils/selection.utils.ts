@@ -11,20 +11,20 @@ export class Selection{
         character: 0
     }
 
-    public el = document.createElement('div');
+    public el = document.createElement('cursor');
     public visible = false;
-    public blinkInterval = 500;
+    public blinkInterval = 800;
     public onchange = null;
     public activeEndSide = true;
     public interval: any;
 
     constructor(private editor: EditorComponent, private color: string) {
         this.el.style.position = 'absolute';
-        this.el.style.width = '1px';
-        this.el.style.height = this.editor.offsetHeight + 'px';
+        this.el.style.width = '2px';
+        this.el.style.height = editor.offsetHeight + 'px';
         this.el.style.backgroundColor = color;
 
-        document.getElementById('page-paginated')?.appendChild(this.el);
+        document.getElementById('canvas-first-page')?.appendChild(this.el);
         this.setPosition(0, 0, false);
     }
 
