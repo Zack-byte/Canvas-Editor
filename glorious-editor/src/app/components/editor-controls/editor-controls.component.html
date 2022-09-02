@@ -1,24 +1,44 @@
 <div class="toolbar">
-  <button
+  <div
     matTooltip="Download as Microsoft Word Document(.docx)"
     (click)="serializeToDocx()"
     mat-raised-button
+    class="nav-control"
   >
     <mat-icon fontSet="fas" fontIcon="fa-file-download"></mat-icon>
-  </button>
-  <button matTooltip="Bold (Ctrl + B)" mat-raised-button>
+  </div>
+  <div matTooltip="Bold (Ctrl + B)" (click)="toggleBold()" [ngClass]="boldActive ? 'nav-control-active' : 'nav-control'">
     <mat-icon fontSet="fas" fontIcon="fa-bold"></mat-icon>
-  </button>
-  <button matTooltip="Italic (Ctrl + I)" mat-raised-button>
+  </div>
+  <div matTooltip="Italic (Ctrl + I)" (click)="toggleItalic()" [ngClass]="italicActive ? 'nav-control-active' : 'nav-control'">
     <mat-icon fontSet="fas" fontIcon="fa-italic"></mat-icon>
-  </button>
-  <button matTooltip="Underline (Ctrl + U)" mat-raised-button>
+  </div>
+  <div matTooltip="Underline (Ctrl + U)" (click)="toggleUnderline()" [ngClass]="underlineActive ? 'nav-control-active' : 'nav-control'">
     <mat-icon fontSet="fas" fontIcon="fa-underline"></mat-icon>
-  </button>
-  <button matTooltip="Text color" mat-raised-button>
+  </div>
+  <div matTooltip="Text color" (click)="toggleTextColor()" [ngClass]="textColorActive ? 'nav-control-active' : 'nav-control'">
     <mat-icon fontSet="fas" fontIcon="fa-fill"></mat-icon>
-  </button>
-  <button matTooltip="Highlight color" mat-raised-button>
+  </div>
+  <div matTooltip="Highlight color" (click)="toggleHighlight()" [ngClass]="highlightActive ? 'nav-control-active' : 'nav-control'">
     <mat-icon fontSet="fas" fontIcon="fa-highlighter"></mat-icon>
-  </button>
+  </div>
+
+  <div class="divider">
+  </div>
+
+  <div class="font-size-container">
+    <div matTooltip="Decrease font size" (click)="fontDecrease()" class="minus-container">
+      <mat-icon fontSet="fas" fontIcon="fa-minus"></mat-icon>
+    </div>
+    <input matTooltip="Font Size" type="text" placeholder="{{ fontSize }}" class="font-size-input"/>
+    <div matTooltip="Increase font size" (click)="fontIncrease()" class="plus-container">
+      <mat-icon fontSet="fas" fontIcon="fa-plus"></mat-icon>
+    </div>
+  </div>
+
+  <div (click)="toggleFontActive()" matTooltip="Font" [ngClass]="fontActive ? 'font-container-active' : 'font-container'">
+    <span>{{ currentFont }}</span>
+    <mat-icon *ngIf="!fontActive" fontSet="fas" fontIcon="fa-caret-down"></mat-icon>
+    <mat-icon *ngIf="fontActive" fontSet="fas" fontIcon="fa-caret-up"></mat-icon>
+  </div>
 </div>

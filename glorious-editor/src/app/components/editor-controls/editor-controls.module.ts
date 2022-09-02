@@ -7,6 +7,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { EditorControlsComponent } from './editor-controls.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
   declarations: [EditorControlsComponent],
@@ -14,6 +15,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   exports: [EditorControlsComponent],
 
   imports: [
+    CommonModule,
     FormsModule,
     MatFormFieldModule,
     ReactiveFormsModule,

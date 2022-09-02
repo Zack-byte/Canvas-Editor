@@ -1,6 +1,10 @@
 <div class="root-container">
   <app-editor-controls
     (serializeDocx)="requestDocx()"
+    (isBold)="handleBold($event)"
+    (isItalic)="handleItalic($event)"
+    (isUnderline)="handleUnderline($event)"
+    (fontSizeChange)="handleFontSizeChange($event)"
   ></app-editor-controls>
 
 

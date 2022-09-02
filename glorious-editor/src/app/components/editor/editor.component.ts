@@ -5,7 +5,6 @@ import { take } from 'rxjs/operators';
 import { ShadowDocument } from 'src/models/shadow-document/shadow-document.model';
 import { GenerateDocxResponse } from 'src/models/generate-docx-response/generate-docx-response.model';
 import { Selection } from 'src/utils/selection.utils';
-import { ThisReceiver } from '@angular/compiler';
 
 @Component({
   selector: 'app-editor',
@@ -28,6 +27,9 @@ export class EditorComponent implements OnInit, AfterViewInit {
   public shiftPressed = false;
   public needsClearing = false;
   public isOpera = false;
+  public isBold = false;
+  public isItalic = false;
+  public isUnderline = false;
   public cursorPosition = {
     line: 0,
     character: 0,
@@ -58,10 +60,29 @@ export class EditorComponent implements OnInit, AfterViewInit {
     this.selection = new Selection(this, "black");
     this.handleFontMetrics();
     this.canvas = <HTMLCanvasElement>document.getElementById('canvas-tile-content');
-
     const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>this.canvas.getContext("2d");
+    let PIXEL_RATIO = (function () {
+          let dpr = window.devicePixelRatio || 1;
 
-    ctx.font = `${this.currentFontSize}px ${this.currentFont}`;
+          const fake = <any>ctx;
+          let bsr = fake.webkitBackingStorePixelRatio ||
+                fake.mozBackingStorePixelRatio ||
+                fake.msBackingStorePixelRatio ||
+                fake.oBackingStorePixelRatio ||
+                fake.backingStorePixelRatio || 1;
+
+        return dpr / bsr;
+    })();
+
+    const w = 1020;
+    const h = 1320
+    this.canvas.width = w * PIXEL_RATIO;
+    this.canvas.height = h * PIXEL_RATIO;
+    this.canvas.style.width = w + "px";
+    this.canvas.style.height = h + "px";
+    ctx.setTransform(PIXEL_RATIO, 0, 0, PIXEL_RATIO, 0, 0);
+
+
     window.addEventListener('keydown', this.keydown.bind(this), true);
     window.addEventListener('focus', this.clearKeyModifiers.bind(this), true);
     window.addEventListener('focus', this.renderDocument.bind(this), true);
@@ -115,8 +136,8 @@ export class EditorComponent implements OnInit, AfterViewInit {
     line.style.font = this.currentFontSize + 'px ' + this.currentFont;
     body.appendChild(line);
 
-    line.innerHTML = 'm'; // It doesn't matter what text goes here
-    this.offsetHeight = line.offsetWidth;
+    line.innerHTML = 'Z'; // It doesn't matter what text goes here
+    this.offsetWidth = line.offsetWidth;
     this.offsetHeight = line.offsetHeight;
 
     var span = document.createElement('span');
@@ -138,6 +159,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
     var lineCount = this.currentDocument.getLineCount();
     var selectionRanges: any = this.selection.lineRanges();
     var selectionWidth = 0;
+    ctx.font = `${this.isItalic ? 'italic ' : ''}${this.isBold ? 'bold ' : ''}${this.currentFontSize}px ${this.currentFont}`;
 
     // Making sure we don't render something that we won't see
     if (lineCount < maxHeight) {
@@ -274,6 +296,22 @@ export class EditorComponent implements OnInit, AfterViewInit {
     if(handled) {
       e.preventDefault();
     }
+  }
+
+  public handleBold(isActive: boolean): void {
+    this.isBold = isActive;
+  }
+
+  public handleItalic(isActive: boolean): void {
+    this.isItalic = isActive;
+  }
+
+  public handleUnderline(isActive: boolean): void {
+    this.isUnderline = isActive;
+  }
+
+  public handleFontSizeChange(size: number): void {
+    this.currentFontSize = size;
   }
 
 }

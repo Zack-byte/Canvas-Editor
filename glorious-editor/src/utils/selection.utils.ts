@@ -113,8 +113,8 @@ export class Selection{
     public updateCursorStyle(): void {
         // Calculating new position on the screen
         const position = this.getPosition();
-        const offsetX = (position[0] - this.editor.scrollLeft) * this.editor.offsetWidth;
-        const offsetY = (position[1] - this.editor.scrollTop) * this.editor.offsetHeight;
+        const offsetX = this.editor.currentDocument.marginLeft + (this.editor.offsetWidth * position[0]) - 1;
+        const offsetY = this.editor.currentDocument.marginTop + (position[1] * this.editor.offsetHeight);
         this.el.style.left = offsetX + 'px';
         this.el.style.top = offsetY + 'px';
 
