@@ -5,6 +5,7 @@ import { take } from 'rxjs/operators';
 import { ShadowDocument } from 'src/models/shadow-document/shadow-document.model';
 import { GenerateDocxResponse } from 'src/models/generate-docx-response/generate-docx-response.model';
 import { Selection } from 'src/utils/selection.utils';
+import { pipe } from 'rxjs';
 
 @Component({
   selector: 'app-editor',
@@ -63,16 +64,16 @@ export class EditorComponent implements OnInit, AfterViewInit {
     this.canvas = <HTMLCanvasElement>document.getElementById('canvas-tile-content');
     const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>this.canvas.getContext("2d");
     let PIXEL_RATIO = (function () {
-          let dpr = window.devicePixelRatio || 1;
+      let dpr = window.devicePixelRatio || 1;
 
-          const fake = <any>ctx;
-          let bsr = fake.webkitBackingStorePixelRatio ||
-                fake.mozBackingStorePixelRatio ||
-                fake.msBackingStorePixelRatio ||
-                fake.oBackingStorePixelRatio ||
-                fake.backingStorePixelRatio || 1;
+      const fake = <any>ctx;
+      let bsr = fake.webkitBackingStorePixelRatio ||
+        fake.mozBackingStorePixelRatio ||
+        fake.msBackingStorePixelRatio ||
+        fake.oBackingStorePixelRatio ||
+        fake.backingStorePixelRatio || 1;
 
-        return dpr / bsr;
+      return dpr / bsr;
     })();
 
     const w = 815;
@@ -88,7 +89,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
     window.addEventListener('focus', this.clearKeyModifiers.bind(this), true);
     window.addEventListener('focus', this.renderDocument.bind(this), true);
     const appview = document.getElementsByClassName('appview');
-    appview[0].addEventListener('click', (event:  any) => {
+    appview[0].addEventListener('click', (event: any) => {
       this.addCursorToScreen(event);
     });
   }
@@ -119,7 +120,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
 
   public handleFontMetrics(char: string): void {
     var line = document.createElement('div'),
-    body = document.body;
+      body = document.body;
     line.style.position = 'absolute';
     line.style.whiteSpace = 'nowrap';
     line.style.font = this.currentFontSize + 'px ' + this.currentFont;
@@ -161,7 +162,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
     ctx.fillStyle = this.currentDocument.color;
 
     // Looping over document lines
-    for(var i = this.scrollTop; i < maxHeight; ++i) {
+    for (var i = this.scrollTop; i < maxHeight; ++i) {
       var topOffset = lineHeight * (i - this.scrollTop);
 
       // Rendering selection for this line if one is present
@@ -169,7 +170,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
         ctx.fillStyle = this.selectionColor;
 
         // Check whether we should select to the end of the line or not
-        if(selectionRanges[i][1] === true) {
+        if (selectionRanges[i][1] === true) {
           selectionWidth = this.canvas.width;
         } else {
           selectionWidth = (selectionRanges[i][1] - selectionRanges[i][0]) * characterWidth;
@@ -230,26 +231,26 @@ export class EditorComponent implements OnInit, AfterViewInit {
 
   public keydown(e: KeyboardEvent): void {
     var handled = true;
-    switch(e.key) {
-      case 'Backspace': 
+    switch (e.key) {
+      case 'Backspace':
         this.deleteCharAtCurrentPosition(false);
         break;
-      case 'Delete': 
+      case 'Delete':
         this.deleteCharAtCurrentPosition(true);
         break;
-      case 'Enter': 
+      case 'Enter':
         this.insertTextAtCurrentPosition('\n');
         break;
-      case 'ArrowLeft': 
+      case 'ArrowLeft':
         this.selection.moveLeft(1, this.shiftPressed);
         break;
-      case 'ArrowUp': 
+      case 'ArrowUp':
         this.selection.moveUp(1, this.shiftPressed);
         break;
-      case 'ArrowRight': 
+      case 'ArrowRight':
         this.selection.moveRight(1, this.shiftPressed);
         break;
-      case 'ArrowDown': 
+      case 'ArrowDown':
         this.selection.moveDown(1, this.shiftPressed);
         break;
       case 'Shift':
@@ -257,7 +258,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
       default:
         this.handleInput(e.key);
     }
-    if(handled) {
+    if (handled) {
       e.preventDefault();
     }
   }
@@ -276,6 +277,71 @@ export class EditorComponent implements OnInit, AfterViewInit {
 
   public handleFontSizeChange(size: number): void {
     this.currentFontSize = size;
+  }
+
+
+  public handleDocxRequest(): void {
+    this.getDocx();
+  }
+
+  public getDocx(): void {
+    this.apiService.getDocx().pipe(take(1)).subscribe((result: any) => {
+      this.renderExistingDocument(result);
+    })
+  }
+
+
+  public renderExistingDocument(document: any): void {
+    var ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>this.canvas.getContext("2d");
+    let topOffset = 0;
+
+    ctx.fillStyle = this.backgroundColor;
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.fillStyle = this.currentDocument.color;
+
+    document.forEach((item: any) => {
+
+      item.forEach((subItem: any) => {
+        console.log('SubItem', subItem);
+        let fontSize = 12;
+        let bold = false;
+        let color = 'black';
+        let italic = false;
+
+        subItem.runProperties.forEach((propItem: any) => {
+          console.log('PROPERTY ITEM', propItem);
+          if (propItem.Name == 'Bold') {
+            if (propItem.Val === '1') {
+              bold = true;
+            } else {
+              bold = false;
+            }
+          }
+          if (propItem.Name == 'Color') {
+            color = `#${propItem.Val}`
+          }
+          if (propItem.Name == 'FontSize') {
+            fontSize = parseInt(propItem.Val)
+          }
+        });
+
+        console.log('FONT:', this.currentFont);
+        console.log('COLOR:', color);
+
+        ctx.font = `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${fontSize}px ${this.currentFont}`;
+        ctx.fillStyle = color;
+
+        console.log('Inner Text', subItem.InnerText);
+        // Drawing text
+        ctx.fillText(
+          subItem.InnerText, 0 + this.currentDocument.marginLeft, topOffset + this.currentDocument.marginTop
+        );
+        console.log('TOP OFFSET', topOffset);
+        topOffset += fontSize;
+     })
+    })
+
+
   }
 
 }

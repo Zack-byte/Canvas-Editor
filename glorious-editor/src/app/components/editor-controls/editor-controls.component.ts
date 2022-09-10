@@ -6,7 +6,7 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
   styleUrls: ['./editor-controls.component.scss']
 })
 export class EditorControlsComponent implements OnInit {
-  @Output() public docxSerialze = new EventEmitter();
+  @Output() public docxRequest = new EventEmitter();
   @Output() public isBold = new EventEmitter<boolean>();
   @Output() public isItalic = new EventEmitter<boolean>();
   @Output() public isUnderline = new EventEmitter<boolean>();
@@ -33,8 +33,9 @@ export class EditorControlsComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  public serializeToDocx(): void {
-    this.docxSerialze.emit;
+  public requestDocx(): void {
+    console.log('Emitting');
+    this.docxRequest.emit();
   }
 
   public toggleBold(): void {

@@ -7,22 +7,22 @@ import { HttpClient, HttpInterceptor } from '@angular/common/http';
 
 @Injectable()
 export class ApiService {
-  public docxUrl = 'https://localhost:7105/PostGenerateDocx';
+  public docxUrl = 'https://localhost:7204/Docx';
 
   constructor(private http: HttpClient) {}
 
   /** POST: Post Document Data to be generated to docx. */
-  public postGenerateDocx(request: GenerateDocxRequest): Observable<GenerateDocxResponse> {
-    return this.http.post<GenerateDocxResponse>(this.docxUrl, request)
+  public getDocx(): Observable<string> {
+    return this.http.get<string>(this.docxUrl)
       .pipe(
         catchError((err: any) => {
-          return this.handleError('postGenerateDocx', request, err);
+          return this.handleError('postGenerateDocx', err);
         })
       );
   }
 
-  public handleError(apiCall: string, request: any, err: any): Observable<any> {
-    console.log(`Request Failed For API call ${apiCall} with request ${request}`);
+  public handleError(apiCall: string, err: any): Observable<any> {
+    console.log(`Request Failed For API call ${apiCall}`);
     console.log(`Error Code Returned: >>> ${err}`)
     return of({});
   }
