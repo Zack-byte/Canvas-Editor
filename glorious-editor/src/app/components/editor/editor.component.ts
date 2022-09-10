@@ -57,8 +57,9 @@ export class EditorComponent implements OnInit, AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    this.selection = new Selection(this, "black");
-    this.handleFontMetrics();
+    // This will call the cursor to the stage...this is a TODO
+    //this.selection = new Selection(this, "black");
+
     this.canvas = <HTMLCanvasElement>document.getElementById('canvas-tile-content');
     const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>this.canvas.getContext("2d");
     let PIXEL_RATIO = (function () {
@@ -74,8 +75,8 @@ export class EditorComponent implements OnInit, AfterViewInit {
         return dpr / bsr;
     })();
 
-    const w = 1020;
-    const h = 1320
+    const w = 815;
+    const h = 1056;
     this.canvas.width = w * PIXEL_RATIO;
     this.canvas.height = h * PIXEL_RATIO;
     this.canvas.style.width = w + "px";
@@ -88,11 +89,11 @@ export class EditorComponent implements OnInit, AfterViewInit {
     window.addEventListener('focus', this.renderDocument.bind(this), true);
     const appview = document.getElementsByClassName('appview');
     appview[0].addEventListener('click', (event:  any) => {
-      this.addCursorToSreen(event);
+      this.addCursorToScreen(event);
     });
   }
 
-  public addCursorToSreen(event: PointerEvent): void {
+  public addCursorToScreen(event: PointerEvent): void {
     this.selection.setVisible(true);
   }
 
@@ -116,19 +117,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
     return this.selection;
   }
 
-  public requestDocx(): void {
-    const request = new GenerateDocxRequest({
-      shadowDocument: this.currentDocument
-    });
-
-    this.apiService
-    .postGenerateDocx(request)
-    .pipe(take(1))
-    .subscribe((result: GenerateDocxResponse) => {
-    })
-  }
-
-  public handleFontMetrics(): void {
+  public handleFontMetrics(char: string): void {
     var line = document.createElement('div'),
     body = document.body;
     line.style.position = 'absolute';
@@ -136,7 +125,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
     line.style.font = this.currentFontSize + 'px ' + this.currentFont;
     body.appendChild(line);
 
-    line.innerHTML = 'Z'; // It doesn't matter what text goes here
+    line.innerHTML = char; // It doesn't matter what text goes here
     this.offsetWidth = line.offsetWidth;
     this.offsetHeight = line.offsetHeight;
 
@@ -156,7 +145,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
     var lineHeight = this.offsetHeight;
     var characterWidth = this.offsetWidth;
     var maxHeight = Math.ceil(this.canvas.height / lineHeight) + this.scrollTop;
-    var lineCount = this.currentDocument.getLineCount();
+    var lineCount = 0;
     var selectionRanges: any = this.selection.lineRanges();
     var selectionWidth = 0;
     ctx.font = `${this.isItalic ? 'italic ' : ''}${this.isBold ? 'bold ' : ''}${this.currentFontSize}px ${this.currentFont}`;
@@ -200,7 +189,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
 
       // Drawing text
       ctx.fillText(
-        this.currentDocument.getLine(i).slice(this.scrollLeft), 0 + this.currentDocument.marginLeft, topOffset + baselineOffset + this.currentDocument.marginTop
+        'test'.slice(this.scrollLeft), 0 + this.currentDocument.marginLeft, topOffset + baselineOffset + this.currentDocument.marginTop
       );
 
       console.log('BaselineOffset', baselineOffset);
@@ -212,38 +201,13 @@ export class EditorComponent implements OnInit, AfterViewInit {
 
 
   public insertTextAtCurrentPosition(text: string): void {
-    // If selection is not empty we need to "replace" selected text with inserted
-    // one which means deleting old selected text before inserting new one
-    if (!this.selection.isEmpty()) {
-      this.deleteCharAtCurrentPosition(false);
-    }
+    this.handleFontMetrics(text);
 
-    var pos = this.selection.getPosition();
-
-    const result = this.currentDocument.insertText(text, pos[0], pos[1]);
-    // Inserting new text and changing position of cursor to a new one
-    this.selection.setPosition(
-      result[0], result[1], false
-    );
     this.renderDocument();
   }
 
   public deleteCharAtCurrentPosition(forward: boolean): void {
-    // If there is a selection we just remove it no matter what direction is
-    if (!this.selection.isEmpty()) {
 
-      const result = this.currentDocument.deleteRange(
-          this.selection.start.character, this.selection.start.line,
-          this.selection.end.character, this.selection.end.line
-        );
-
-      this.selection.setPosition(result[0], result[1], false);
-    } else {
-      var pos = this.selection.getPosition();
-      // Deleting text and changing position of cursor to a new one
-      const result = this.currentDocument.deleteChar(forward, pos[0], pos[1]);
-      this.selection.setPosition(result[0], result[1], false);
-    }
     this.renderDocument();
     this.selection.updateCursorStyle();
   }

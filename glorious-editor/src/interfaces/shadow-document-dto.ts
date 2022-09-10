@@ -1,4 +1,4 @@
-import { IDocumentContentDto } from "./document-content-dto";
+import { IParagraphDto } from "./paragraph-dto";
 
 export interface IShadowDocumentDto {
   name: string;
@@ -9,5 +9,7 @@ export interface IShadowDocumentDto {
   font: string;
   fontSize: number;
   color: string;
-  content: IDocumentContentDto;
+  addBuffer: string;
+  originalBuffer: string;
+  content: IParagraphDto;
 }

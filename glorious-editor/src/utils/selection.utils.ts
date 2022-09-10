@@ -72,48 +72,14 @@ export class Selection{
     }
 
     public setPosition(character: number, line: number, keepSelection: boolean): void {
-        var position = this.forceBounds(character, line);
-
-        // Calling private setter that does the heavy lifting
-        this.doSetPosition(position[0], position[1], keepSelection);
 
     }
 
-    public forceBounds(character: number, line: number): [number, number] {
-        var position = this.getPosition();
-
-        // Checking lower bounds
-        line >= 0 || (line = 0);
-        if (character < 0) {
-            // Wraparound for lines
-            if (line === position[1] && line > 0) {
-            --line;
-            character = this.editor.currentDocument.getLine(line).replace('\n', '').length;
-            } else {
-            character = 0;
-            }
-        }
-
-        // Checking upper bounds
-        var lineCount = this.editor.currentDocument.getLineCount();
-        line < lineCount || (line = lineCount - 1);
-        var characterCount = this.editor.currentDocument.getLine(line).replace('\n', '').length;
-        if (character > characterCount) {
-            // Wraparound for lines
-            if (line === position[1] && line < this.editor.currentDocument.getLineCount() - 1) {
-            ++line;
-            character = 0;
-            } else {
-            character = characterCount;
-            }
-        }
-        return [character, line];
-    }
 
     public updateCursorStyle(): void {
         // Calculating new position on the screen
         const position = this.getPosition();
-        const offsetX = this.editor.currentDocument.marginLeft + (this.editor.offsetWidth * position[0]) - 1;
+        const offsetX = this.editor.currentDocument.marginLeft + ((this.editor.offsetWidth) * position[0]);
         const offsetY = this.editor.currentDocument.marginTop + (position[1] * this.editor.offsetHeight);
         this.el.style.left = offsetX + 'px';
         this.el.style.top = offsetY + 'px';

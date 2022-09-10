@@ -1,6 +1,5 @@
 <div class="root-container">
   <app-editor-controls
-    (serializeDocx)="requestDocx()"
     (isBold)="handleBold($event)"
     (isItalic)="handleItalic($event)"
     (isUnderline)="handleUnderline($event)"
@@ -18,7 +17,7 @@
                 <div class="rotatingtilemanager-content">
                   <div id="canvas-first-page" class="page-paginated canvas-first-page">
                     <div class="stacked-tile-page-shadow"></div>
-                    <canvas id="canvas-tile-content" class="canvas-tile-content" width="1020" height="1320"></canvas>
+                    <canvas id="canvas-tile-content" class="canvas-tile-content"></canvas>
                   </div>
                 </div>
               </div>
