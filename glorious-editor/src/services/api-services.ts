@@ -1,9 +1,8 @@
-import { GenerateDocxResponse } from './../models/generate-docx-response/generate-docx-response.model';
-import { GenerateDocxRequest } from './../models/generate-docx-request/generate-docx-request.model';
 import { Injectable } from "@angular/core";
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { HttpClient, HttpInterceptor } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { ShadowDocument } from 'src/models/shadow-document/shadow-document.model';
 
 @Injectable()
 export class ApiService {
@@ -12,8 +11,8 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   /** POST: Post Document Data to be generated to docx. */
-  public getDocx(): Observable<string> {
-    return this.http.get<string>(this.docxUrl)
+  public getDocx(): Observable<any> {
+    return this.http.get<any>(this.docxUrl)
       .pipe(
         catchError((err: any) => {
           return this.handleError('postGenerateDocx', err);

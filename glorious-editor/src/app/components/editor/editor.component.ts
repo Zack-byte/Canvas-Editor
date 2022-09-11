@@ -1,16 +1,19 @@
-import { GenerateDocxRequest } from './../../../models/generate-docx-request/generate-docx-request.model';
 import { ApiService } from 'src/services/api-services';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { take } from 'rxjs/operators';
 import { ShadowDocument } from 'src/models/shadow-document/shadow-document.model';
-import { GenerateDocxResponse } from 'src/models/generate-docx-response/generate-docx-response.model';
 import { Selection } from 'src/utils/selection.utils';
-import { pipe } from 'rxjs';
+import { ShadowBody } from 'src/models/shadow-body/shadow-body.model';
+import { ShadowParagraph } from 'src/models/paragraph/shadow-paragraph.model';
+import { TextRun } from 'src/models/text-run/text-run.model';
+import { DocumentProperties } from 'src/models/document-properties/document-properties.model';
+import { DocumentPageMargin } from 'src/models/document-page-margin/document-page-margin.model';
+import { TextRunAttribute } from 'src/models/text-run-attribute/text-run-attribute.model';
 
 @Component({
   selector: 'app-editor',
   templateUrl: './editor.component.html',
-  styleUrls: ['./editor.component.scss']
+  styleUrls: ['./editor.component.scss'],
 })
 export class EditorComponent implements OnInit, AfterViewInit {
   public currentDocument: ShadowDocument;
@@ -31,67 +34,32 @@ export class EditorComponent implements OnInit, AfterViewInit {
   public isBold = false;
   public isItalic = false;
   public isUnderline = false;
+  public visualWidth = 815;
+  public visualHeight = 1056;
   public cursorPosition = {
     line: 0,
     character: 0,
-  }
+  };
 
   constructor(private apiService: ApiService) {
-    this.currentDocument = new ShadowDocument("", {
-      name: "Test Document",
-      font: "Times New Roman",
-      fontSize: 12,
-      color: "black",
-      marginBottom: 35,
-      marginLeft: 35,
-      marginRight: 35,
-      marginTop: 35
-    });
-
-    this.currentFontSize = this.currentDocument.fontSize;
-    this.currentFont = this.currentDocument.font;
-    this.canvas = <HTMLCanvasElement>document.getElementById('canvas-tile-content');
-    this.selection = new Selection(this, "white");
+    this.currentDocument = new ShadowDocument();
+    this.currentFontSize = 0;
+    this.currentFont = 'Times New Roman';
+    this.canvas = <HTMLCanvasElement>(
+      document.getElementById('canvas-tile-content')
+    );
+    this.selection = new Selection(this, 'white');
   }
 
-  public ngOnInit(): void {
-  }
+  public ngOnInit(): void {}
 
   public ngAfterViewInit(): void {
     // This will call the cursor to the stage...this is a TODO
     //this.selection = new Selection(this, "black");
 
-    this.canvas = <HTMLCanvasElement>document.getElementById('canvas-tile-content');
-    const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>this.canvas.getContext("2d");
-    let PIXEL_RATIO = (function () {
-      let dpr = window.devicePixelRatio || 1;
-
-      const fake = <any>ctx;
-      let bsr = fake.webkitBackingStorePixelRatio ||
-        fake.mozBackingStorePixelRatio ||
-        fake.msBackingStorePixelRatio ||
-        fake.oBackingStorePixelRatio ||
-        fake.backingStorePixelRatio || 1;
-
-      return dpr / bsr;
-    })();
-
-    const w = 815;
-    const h = 1056;
-    this.canvas.width = w * PIXEL_RATIO;
-    this.canvas.height = h * PIXEL_RATIO;
-    this.canvas.style.width = w + "px";
-    this.canvas.style.height = h + "px";
-    ctx.setTransform(PIXEL_RATIO, 0, 0, PIXEL_RATIO, 0, 0);
-
-
-    window.addEventListener('keydown', this.keydown.bind(this), true);
-    window.addEventListener('focus', this.clearKeyModifiers.bind(this), true);
-    window.addEventListener('focus', this.renderDocument.bind(this), true);
-    const appview = document.getElementsByClassName('appview');
-    appview[0].addEventListener('click', (event: any) => {
-      this.addCursorToScreen(event);
-    });
+    this.setupCanvas();
+    this.setupNewDocument();
+    this.addEventListeners();
   }
 
   public addCursorToScreen(event: PointerEvent): void {
@@ -102,13 +70,13 @@ export class EditorComponent implements OnInit, AfterViewInit {
     if (e.keyCode == 16) {
       this.shiftPressed = true;
     }
-  };
+  }
 
   public removeKeyModifier(e: KeyboardEvent): void {
     if (e.keyCode === 16) {
       this.shiftPressed = false;
-    };
-  };
+    }
+  }
 
   public clearKeyModifiers(): void {
     this.shiftPressed = false;
@@ -141,7 +109,9 @@ export class EditorComponent implements OnInit, AfterViewInit {
   }
 
   public renderDocument(): void {
-    var ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>this.canvas.getContext("2d");
+    var ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>(
+      this.canvas.getContext('2d')
+    );
     var baselineOffset = this.baseline;
     var lineHeight = this.offsetHeight;
     var characterWidth = this.offsetWidth;
@@ -149,7 +119,9 @@ export class EditorComponent implements OnInit, AfterViewInit {
     var lineCount = 0;
     var selectionRanges: any = this.selection.lineRanges();
     var selectionWidth = 0;
-    ctx.font = `${this.isItalic ? 'italic ' : ''}${this.isBold ? 'bold ' : ''}${this.currentFontSize}px ${this.currentFont}`;
+    ctx.font = `${this.isItalic ? 'italic ' : ''}${this.isBold ? 'bold ' : ''}${
+      this.currentFontSize
+    }px ${this.currentFont}`;
 
     // Making sure we don't render something that we won't see
     if (lineCount < maxHeight) {
@@ -159,7 +131,7 @@ export class EditorComponent implements OnInit, AfterViewInit {
     // Clearing previous iteration
     ctx.fillStyle = this.backgroundColor;
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.fillStyle = this.currentDocument.color;
+    ctx.fillStyle = 'black';
 
     // Looping over document lines
     for (var i = this.scrollTop; i < maxHeight; ++i) {
@@ -173,7 +145,8 @@ export class EditorComponent implements OnInit, AfterViewInit {
         if (selectionRanges[i][1] === true) {
           selectionWidth = this.canvas.width;
         } else {
-          selectionWidth = (selectionRanges[i][1] - selectionRanges[i][0]) * characterWidth;
+          selectionWidth =
+            (selectionRanges[i][1] - selectionRanges[i][0]) * characterWidth;
         }
 
         // Drawing selection
@@ -185,21 +158,17 @@ export class EditorComponent implements OnInit, AfterViewInit {
         );
 
         // Restoring fill color for the text
-        ctx.fillStyle = this.currentDocument.color;
+        ctx.fillStyle = 'black';
       }
 
       // Drawing text
       ctx.fillText(
-        'test'.slice(this.scrollLeft), 0 + this.currentDocument.marginLeft, topOffset + baselineOffset + this.currentDocument.marginTop
+        'test'.slice(this.scrollLeft),
+        0 + 0,
+        topOffset + baselineOffset + 0
       );
-
-      console.log('BaselineOffset', baselineOffset);
-      console.log('TopOffset', topOffset);
-      console.log('Document', this.currentDocument);
-
     }
   }
-
 
   public insertTextAtCurrentPosition(text: string): void {
     this.handleFontMetrics(text);
@@ -208,7 +177,6 @@ export class EditorComponent implements OnInit, AfterViewInit {
   }
 
   public deleteCharAtCurrentPosition(forward: boolean): void {
-
     this.renderDocument();
     this.selection.updateCursorStyle();
   }
@@ -224,10 +192,8 @@ export class EditorComponent implements OnInit, AfterViewInit {
     }
 
     this.renderDocument();
-    this.selection.updateCursorStyle()
+    this.selection.updateCursorStyle();
   }
-
-
 
   public keydown(e: KeyboardEvent): void {
     var handled = true;
@@ -279,69 +245,148 @@ export class EditorComponent implements OnInit, AfterViewInit {
     this.currentFontSize = size;
   }
 
-
   public handleDocxRequest(): void {
-    this.getDocx();
+    this.getExistingDocument();
   }
 
-  public getDocx(): void {
-    this.apiService.getDocx().pipe(take(1)).subscribe((result: any) => {
-      this.renderExistingDocument(result);
-    })
+  public getExistingDocument(): void {
+    this.apiService
+      .getDocx()
+      .pipe(take(1))
+      .subscribe((result: any) => {
+        console.log('RAW', result);
+        this.handleExistingDocumentResult(new ShadowDocument(result));
+      });
   }
 
+  public handleExistingDocumentResult(document: ShadowDocument) {
+    this.currentDocument = document;
+    console.log('CurrentDocument', this.currentDocument)
+    this.renderExistingDocument();
+  }
 
-  public renderExistingDocument(document: any): void {
-    var ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>this.canvas.getContext("2d");
+  public renderExistingDocument(): void {
+    var ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>(
+      this.canvas.getContext('2d')
+    );
     let topOffset = 0;
 
     ctx.fillStyle = this.backgroundColor;
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.fillStyle = this.currentDocument.color;
+    ctx.fillStyle = 'black';
+    console.log(this.currentDocument.Body);
 
-    document.forEach((item: any) => {
+    this.currentDocument.Body.Paragraphs.forEach((paragraph: ShadowParagraph) => {
+      let fontSize = 12;
+      let bold = false;
+      let color = 'black';
+      let italic = false;
+      let bodyMargin = this.currentDocument.Body.BodyProperties.pageMargin;
+      let pageSize = this.currentDocument.Body.BodyProperties.pageSize;
+      let adjustedMargin = new DocumentPageMargin();
+      adjustedMargin.bottom = ((bodyMargin.bottom * this.visualHeight)/ pageSize.height);
+      adjustedMargin.top = ((bodyMargin.top * this.visualHeight) / pageSize.height);
+      adjustedMargin.left = ((bodyMargin.left * this.visualWidth) / pageSize.width);
+      adjustedMargin.right = ((bodyMargin.right * this.visualWidth) / pageSize.width);
 
-      item.forEach((subItem: any) => {
-        console.log('SubItem', subItem);
-        let fontSize = 12;
-        let bold = false;
-        let color = 'black';
-        let italic = false;
+      // Styles follow a hierarchy
+      // If a particular element does not have a style, it pulls from it's closest ancestor
+      // This needs to be fleshed out more in the Dto's.
 
-        subItem.runProperties.forEach((propItem: any) => {
-          console.log('PROPERTY ITEM', propItem);
-          if (propItem.Name == 'Bold') {
-            if (propItem.Val === '1') {
-              bold = true;
-            } else {
-              bold = false;
-            }
-          }
-          if (propItem.Name == 'Color') {
-            color = `#${propItem.Val}`
-          }
-          if (propItem.Name == 'FontSize') {
-            fontSize = parseInt(propItem.Val)
+      paragraph.runs.forEach((textRun: TextRun) => {
+
+        // We check the properties for styles first...Then Render the run.
+
+        textRun.attributes.forEach((attribute: TextRunAttribute) => {
+          switch (attribute.name) {
+            case 'Bold':
+              switch (attribute.value) {
+                case '1':
+                  bold = true;
+                  break;
+                default:
+                  bold = false;
+              }
+              break;
+            case 'Color':
+              color = `#${attribute.value}`
+              break;
+            case 'FontSize':
+              fontSize = parseInt(attribute.value);
+              break;
+            default:
           }
         });
-
-        console.log('FONT:', this.currentFont);
-        console.log('COLOR:', color);
 
         ctx.font = `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${fontSize}px ${this.currentFont}`;
         ctx.fillStyle = color;
 
-        console.log('Inner Text', subItem.InnerText);
         // Drawing text
         ctx.fillText(
-          subItem.InnerText, 0 + this.currentDocument.marginLeft, topOffset + this.currentDocument.marginTop
+          textRun.text, adjustedMargin.left, adjustedMargin.top + topOffset
         );
         console.log('TOP OFFSET', topOffset);
         topOffset += fontSize;
      })
     })
-
-
+    
   }
 
+  public addEventListeners(): void {
+    window.addEventListener('keydown', this.keydown.bind(this), true);
+    window.addEventListener('focus', this.clearKeyModifiers.bind(this), true);
+    window.addEventListener('focus', this.renderDocument.bind(this), true);
+    const appview = document.getElementsByClassName('appview');
+    appview[0].addEventListener('click', (event: any) => {
+      this.addCursorToScreen(event);
+    });
+  }
+
+  public setupCanvas(): void {
+    this.canvas = <HTMLCanvasElement>(
+      document.getElementById('canvas-tile-content')
+    );
+    const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>(
+      this.canvas.getContext('2d')
+    );
+    let PIXEL_RATIO = (function () {
+      let dpr = window.devicePixelRatio || 1;
+
+      const fake = <any>ctx;
+      let bsr =
+        fake.webkitBackingStorePixelRatio ||
+        fake.mozBackingStorePixelRatio ||
+        fake.msBackingStorePixelRatio ||
+        fake.oBackingStorePixelRatio ||
+        fake.backingStorePixelRatio ||
+        1;
+
+      return dpr / bsr;
+    })();
+
+    const w = 815;
+    const h = 1056;
+
+    this.canvas.width = w * PIXEL_RATIO;
+    this.canvas.height = h * PIXEL_RATIO;
+    this.canvas.style.width = w + 'px';
+    this.canvas.style.height = h + 'px';
+    ctx.setTransform(PIXEL_RATIO, 0, 0, PIXEL_RATIO, 0, 0);
+  }
+
+  public setupNewDocument(): void {
+    this.currentDocument = new ShadowDocument();
+    this.currentDocument.Body = new ShadowBody();
+    this.currentDocument.Body.BodyProperties = new DocumentProperties();
+    this.currentDocument.Body.BodyProperties.pageMargin =
+      new DocumentPageMargin();
+    this.currentDocument.Body.BodyProperties.pageMargin.bottom = 72;
+    this.currentDocument.Body.BodyProperties.pageMargin.left = 72;
+    this.currentDocument.Body.BodyProperties.pageMargin.top = 72;
+    this.currentDocument.Body.BodyProperties.pageMargin.right = 72;
+    this.currentDocument.Body.BodyProperties.pageMargin.header = 0;
+    this.currentDocument.Body.BodyProperties.pageMargin.footer = 0;
+    this.currentDocument.Body.Paragraphs = [new ShadowParagraph()];
+    this.currentDocument.Body.Paragraphs[0].runs = [new TextRun()];
+  }
 }

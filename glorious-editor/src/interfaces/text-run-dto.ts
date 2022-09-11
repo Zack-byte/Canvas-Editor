@@ -1,8 +1,6 @@
+import { ITextRunAttributeDto } from "./text-run-attribute-dto";
+
 export interface ITextRunDto {
-  font: string;
-  fontSize: number;
-  color: string;
-  start: number;
-  length: number;
-  source: string;
+  text: string;
+  attributes: ITextRunAttributeDto[]
 }
