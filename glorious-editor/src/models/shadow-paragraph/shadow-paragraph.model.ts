@@ -4,10 +4,10 @@ import { TextRun } from '../text-run/text-run.model';
 
 
 export class ShadowParagraph implements IShadowParagraphDto {
-  public runs: TextRun[];
+  public Runs: TextRun[];
 
   constructor(o?: Partial<ShadowParagraph>) {
     const obj: Partial<ShadowParagraph> = getObject(o);
-    this.runs = getArrayOfModels(TextRun, obj.runs);
+    this.Runs = <TextRun[]>obj.Runs?.map((run: any) => new TextRun(run));
   };
 }

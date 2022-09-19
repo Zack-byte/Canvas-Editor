@@ -8,21 +8,21 @@ import { DocumentPageSize } from "../document-page-size/document-page-size.model
 import { DocumentTitlePage } from "../document-title-page/document-title-page.model";
 
 export class DocumentProperties implements IDocumentPropertiesDto {
-    public headerReference: DocumentHeaderReference;
-    public footerReference: DocumentFooterReference;
-    public pageSize: DocumentPageSize;
-    public pageMargin: DocumentPageMargin;
-    public pageNumberType: DocumentPageNumberType;
-    public titlePage: DocumentTitlePage;
+    public HeaderReference: DocumentHeaderReference;
+    public FooterReference: DocumentFooterReference;
+    public PageSize: DocumentPageSize;
+    public PageMargin: DocumentPageMargin;
+    public PageNumberType: DocumentPageNumberType;
+    public TitlePage: DocumentTitlePage;
 
     constructor(o?: Partial<DocumentProperties>) {
     const obj: Partial<DocumentProperties> = getObject(o);
-    this.headerReference = new DocumentHeaderReference(obj.headerReference);
-    this.footerReference = new DocumentFooterReference(obj.footerReference);
-    this.pageSize = new DocumentPageSize(obj.pageSize);
-    this.pageMargin = new DocumentPageMargin(obj.pageMargin);
-    this.pageNumberType = new DocumentPageNumberType(obj.pageNumberType);
-    this.titlePage = new DocumentTitlePage(obj.titlePage);
+    this.HeaderReference = new DocumentHeaderReference(obj.HeaderReference);
+    this.FooterReference = new DocumentFooterReference(obj.FooterReference);
+    this.PageSize = new DocumentPageSize(obj.PageSize);
+    this.PageMargin = new DocumentPageMargin(obj.PageMargin);
+    this.PageNumberType = new DocumentPageNumberType(obj.PageNumberType);
+    this.TitlePage = new DocumentTitlePage(obj.TitlePage);
   }
 
 

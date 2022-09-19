@@ -4,7 +4,7 @@ import { take } from 'rxjs/operators';
 import { ShadowDocument } from 'src/models/shadow-document/shadow-document.model';
 import { Selection } from 'src/utils/selection.utils';
 import { ShadowBody } from 'src/models/shadow-body/shadow-body.model';
-import { ShadowParagraph } from 'src/models/paragraph/shadow-paragraph.model';
+import { ShadowParagraph } from 'src/models/shadow-paragraph/shadow-paragraph.model';
 import { TextRun } from 'src/models/text-run/text-run.model';
 import { DocumentProperties } from 'src/models/document-properties/document-properties.model';
 import { DocumentPageMargin } from 'src/models/document-page-margin/document-page-margin.model';
@@ -281,26 +281,30 @@ export class EditorComponent implements OnInit, AfterViewInit {
       let bold = false;
       let color = 'black';
       let italic = false;
-      let bodyMargin = this.currentDocument.Body.BodyProperties.pageMargin;
-      let pageSize = this.currentDocument.Body.BodyProperties.pageSize;
+      let bodyMargin = this.currentDocument.Body.BodyProperties.PageMargin;
+      let pageSize = this.currentDocument.Body.BodyProperties.PageSize;
       let adjustedMargin = new DocumentPageMargin();
-      adjustedMargin.bottom = ((bodyMargin.bottom * this.visualHeight)/ pageSize.height);
-      adjustedMargin.top = ((bodyMargin.top * this.visualHeight) / pageSize.height);
-      adjustedMargin.left = ((bodyMargin.left * this.visualWidth) / pageSize.width);
-      adjustedMargin.right = ((bodyMargin.right * this.visualWidth) / pageSize.width);
+      adjustedMargin.Bottom = ((bodyMargin.Bottom * this.visualHeight)/ pageSize.Height);
+      adjustedMargin.Top = ((bodyMargin.Top * this.visualHeight) / pageSize.Height);
+      console.log('Body LEFT', bodyMargin);
+      console.log('visual Width', this.visualWidth);
+      console.log('Page Size', pageSize);
+
+      adjustedMargin.Left = ((bodyMargin.Left * this.visualWidth) / pageSize.Width);
+      adjustedMargin.Right = ((bodyMargin.Right * this.visualWidth) / pageSize.Width);
 
       // Styles follow a hierarchy
       // If a particular element does not have a style, it pulls from it's closest ancestor
       // This needs to be fleshed out more in the Dto's.
 
-      paragraph.runs.forEach((textRun: TextRun) => {
+      paragraph.Runs.forEach((textRun: TextRun) => {
 
         // We check the properties for styles first...Then Render the run.
 
-        textRun.attributes.forEach((attribute: TextRunAttribute) => {
-          switch (attribute.name) {
+        textRun.Attributes.forEach((attribute: TextRunAttribute) => {
+          switch (attribute.Name) {
             case 'Bold':
-              switch (attribute.value) {
+              switch (attribute.Value) {
                 case '1':
                   bold = true;
                   break;
@@ -309,10 +313,10 @@ export class EditorComponent implements OnInit, AfterViewInit {
               }
               break;
             case 'Color':
-              color = `#${attribute.value}`
+              color = `#${attribute.Value}`
               break;
             case 'FontSize':
-              fontSize = parseInt(attribute.value);
+              fontSize = parseInt(attribute.Value);
               break;
             default:
           }
@@ -321,9 +325,10 @@ export class EditorComponent implements OnInit, AfterViewInit {
         ctx.font = `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${fontSize}px ${this.currentFont}`;
         ctx.fillStyle = color;
 
+        console.log('Margin Left', adjustedMargin.Left);
         // Drawing text
         ctx.fillText(
-          textRun.text, adjustedMargin.left, adjustedMargin.top + topOffset
+          textRun.Text, adjustedMargin.Left, adjustedMargin.Top + topOffset
         );
         console.log('TOP OFFSET', topOffset);
         topOffset += fontSize;
@@ -378,15 +383,15 @@ export class EditorComponent implements OnInit, AfterViewInit {
     this.currentDocument = new ShadowDocument();
     this.currentDocument.Body = new ShadowBody();
     this.currentDocument.Body.BodyProperties = new DocumentProperties();
-    this.currentDocument.Body.BodyProperties.pageMargin =
+    this.currentDocument.Body.BodyProperties.PageMargin =
       new DocumentPageMargin();
-    this.currentDocument.Body.BodyProperties.pageMargin.bottom = 72;
-    this.currentDocument.Body.BodyProperties.pageMargin.left = 72;
-    this.currentDocument.Body.BodyProperties.pageMargin.top = 72;
-    this.currentDocument.Body.BodyProperties.pageMargin.right = 72;
-    this.currentDocument.Body.BodyProperties.pageMargin.header = 0;
-    this.currentDocument.Body.BodyProperties.pageMargin.footer = 0;
+    this.currentDocument.Body.BodyProperties.PageMargin.Bottom = 72;
+    this.currentDocument.Body.BodyProperties.PageMargin.Left = 72;
+    this.currentDocument.Body.BodyProperties.PageMargin.Top = 72;
+    this.currentDocument.Body.BodyProperties.PageMargin.Right = 72;
+    this.currentDocument.Body.BodyProperties.PageMargin.Header = 0;
+    this.currentDocument.Body.BodyProperties.PageMargin.Footer = 0;
     this.currentDocument.Body.Paragraphs = [new ShadowParagraph()];
-    this.currentDocument.Body.Paragraphs[0].runs = [new TextRun()];
+    this.currentDocument.Body.Paragraphs[0].Runs = [new TextRun()];
   }
 }

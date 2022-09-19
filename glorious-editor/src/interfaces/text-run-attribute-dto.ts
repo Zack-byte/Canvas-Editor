@@ -1,4 +1,4 @@
 export interface ITextRunAttributeDto {
-   name: string;
-   value: string; 
+   Name: string;
+   Value: string; 
 }

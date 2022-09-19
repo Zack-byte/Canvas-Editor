@@ -1,8 +1,7 @@
-import { IDocumentPropertiesDto } from "src/interfaces/document-properties-dto";
 import { IShadowBodyDto } from "src/interfaces/shadow-body-dto";
 import { getArrayOfModels, getObject } from "src/utils/primitives.utils";
 import { DocumentProperties } from "../document-properties/document-properties.model";
-import {  ShadowParagraph } from "../paragraph/shadow-paragraph.model";
+import {  ShadowParagraph } from "../shadow-paragraph/shadow-paragraph.model";
 
 export class ShadowBody implements IShadowBodyDto {
   public Paragraphs: ShadowParagraph[];
@@ -10,7 +9,7 @@ export class ShadowBody implements IShadowBodyDto {
 
   constructor(o?: Partial<ShadowBody>) {
     const obj: Partial<ShadowBody> = getObject(o);
-    this.Paragraphs = getArrayOfModels(ShadowParagraph, obj.Paragraphs);
+    this.Paragraphs = <ShadowParagraph[]>obj.Paragraphs?.map((paragraph: any) => new ShadowParagraph(paragraph));
     this.BodyProperties = new DocumentProperties(obj.BodyProperties);
   }
 }

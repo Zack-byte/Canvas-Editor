@@ -1,4 +1,4 @@
 export interface IDocumentPageSizeDto {
-    height: number;
-    width: number;
+    Height: number;
+    Width: number;
 }

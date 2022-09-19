@@ -1,8 +1,8 @@
 export interface IDocumentPageMarginDto {
-    bottom: number;
-    left: number;
-    top: number;
-    right: number;
-    footer: number;
-    header: number;
+    Bottom: number;
+    Left: number;
+    Top: number;
+    Right: number;
+    Footer: number;
+    Header: number;
 }

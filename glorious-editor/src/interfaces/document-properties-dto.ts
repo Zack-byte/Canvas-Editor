@@ -6,10 +6,10 @@ import { IDocumentPageSizeDto } from "./document-page-size-dto";
 import { IDocumentTitlePageDto } from "./document-title-page-dto";
 
 export interface IDocumentPropertiesDto {
-    headerReference: IDocumentHeaderReferenceDto;
-    footerReference: IDocumentFooterReferenceDto;
-    pageSize: IDocumentPageSizeDto;
-    pageMargin: IDocumentPageMarginDto;
-    pageNumberType: IDocumentPageNumberTypeDto;
-    titlePage: IDocumentTitlePageDto;
+    HeaderReference: IDocumentHeaderReferenceDto;
+    FooterReference: IDocumentFooterReferenceDto;
+    PageSize: IDocumentPageSizeDto;
+    PageMargin: IDocumentPageMarginDto;
+    PageNumberType: IDocumentPageNumberTypeDto;
+    TitlePage: IDocumentTitlePageDto;
 }
